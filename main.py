@@ -8,7 +8,9 @@ app.config['DEBUG'] = True      # displays runtime errors in the browser, too
 @app.route('/')
 def index():
     username_error = request.args.get('username_error')
-    return render_template('form.html', username_error=username_error)
+    password_error = request.args.get('password_error')
+    email_error = request.args.get('email_error')
+    return render_template('form.html', username_error=username_error, password_error=password_error, email_error=email_error)
 
 @app.route('/validate', methods=['POST'])
 def validate():
@@ -36,11 +38,23 @@ def validate():
         password_error = 'Please enter a password'
 
     #validate email    
+    email_error = ''
+    if email:
+        if len(email) < 3 or len(email) > 20:
+            email_error = 'Email must be between 3 and 20 characters'
+        if email.count('@') != 1 or email.count('.') != 1:
+            email_error = 'Please enter a valid Email address'
+        if ' ' in email:
+            email_error = 'Please enter a valid Email address'
 
+    if username_error or password_error or email_error:
+        return redirect('/?username_error=' + username_error + '&password_error=' + password_error + '&email_error=' + email_error + '&username=' + username + '&email=' + email)
+    else:
+        return redirect('/welcome?username='+ username)
 
-
-    if username_error or password_error:
-        return redirect('/?username_error=' + username_error + '&password_error=' + password_error)
-
+@app.route('/welcome')
+def welcome():
+    username = request.args.get('username')
+    return render_template('welcome.html', username=username )
 
 app.run()
